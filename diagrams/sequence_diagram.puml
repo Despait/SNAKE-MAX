@@ -1,0 +1,45 @@
+@startuml
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+actor "Игрок" as Player
+participant "SnakeGameApp" as UI
+participant "GameEngine" as Engine
+participant "Snake" as Snake
+participant "CollisionSystem" as Collision
+participant "Entity / Food" as Item
+participant "GameRenderer" as Renderer
+participant "ScoreManager" as Records
+
+Player -> UI: нажимает «Играть»
+UI -> Engine: start()
+UI -> Renderer: draw(canvas, engine)
+Renderer --> UI: изображение поля
+
+loop каждый игровой тик
+  Player -> UI: стрелка / WASD
+  UI -> Engine: set_direction(direction)
+  Engine -> Snake: turn(direction)
+  UI -> Engine: step()
+  Engine -> Snake: next_head
+  Snake --> Engine: Position
+  Engine -> Collision: normalize(position, settings)
+  Collision --> Engine: позиция / None
+  alt смертельное столкновение
+    Engine -> Collision: obstacle_hit() / body_hit()
+    Collision --> Engine: true
+    Engine -> Engine: _end_game(reason)
+    UI -> Records: save(name, score, mode, difficulty)
+    Records --> UI: сохранено
+  else перемещение допустимо
+    Engine -> Snake: move(position, grow)
+    opt еда или бонус
+      Engine -> Item: on_collect(engine)
+      Item -> Engine: add_score() / apply_effect()
+      Item --> Engine: сообщение
+    end
+  end
+  UI -> Renderer: draw(canvas, engine)
+  Renderer --> UI: обновлённое изображение
+end
+@enduml

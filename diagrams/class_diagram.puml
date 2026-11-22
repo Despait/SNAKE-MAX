@@ -1,0 +1,122 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+left to right direction
+
+package "Модели" {
+  class GameSettings {
+    +width: int
+    +height: int
+    +mode: GameMode
+    +difficulty: Difficulty
+    +base_interval_ms: int
+  }
+  class Position <<value object>> {
+    +x: int
+    +y: int
+    +moved(direction): Position
+  }
+  class Snake {
+    -_segments: list[Position]
+    -_direction: Direction
+    -_queued_direction: Direction
+    +segments: tuple[Position]
+    +head: Position
+    +turn(direction): bool
+    +move(destination, grow): void
+  }
+}
+
+package "Игровые сущности" {
+  abstract class Entity {
+    +position: Position
+    {abstract} +color: str
+    {abstract} +glyph: str
+    {abstract} +on_collect(engine): str
+  }
+  class Food {
+    +on_collect(engine): str
+  }
+  class GoldenFood {
+    +on_collect(engine): str
+  }
+  abstract class PowerUp {
+    +expires_at: int
+    {abstract} +activate(engine): void
+    +on_collect(engine): str
+  }
+  class DoublePoints {
+    +activate(engine): void
+  }
+  class GhostMode {
+    +activate(engine): void
+  }
+  class SlowMotion {
+    +activate(engine): void
+  }
+  class Obstacle
+  class Portal
+  Entity <|-- Food
+  Food <|-- GoldenFood
+  Entity <|-- PowerUp
+  PowerUp <|-- DoublePoints
+  PowerUp <|-- GhostMode
+  PowerUp <|-- SlowMotion
+  Entity <|-- Obstacle
+  Entity <|-- Portal
+}
+package "Логика и UI" {
+  class LevelGenerator {
+    -_rng: Random
+    +free_cell(settings, occupied): Position
+    +initial_obstacles(settings, snake): list
+  }
+  class CollisionSystem {
+    +normalize(pos, settings): Position
+    +obstacle_hit(pos, obstacles): bool
+    +body_hit(pos, snake, grow): bool
+  }
+  class GameEngine {
+    +settings: GameSettings
+    +snake: Snake
+    +score: int
+    +state: GameState
+    +effects: dict
+    +step(): void
+    +start(): void
+    +toggle_pause(): void
+    +set_direction(direction): bool
+    +add_score(points): void
+    +apply_effect(name, duration): void
+  }
+  class ScoreManager {
+    -_path: Path
+    +load(): list
+    +save(name, score, mode, difficulty): void
+  }
+  class GameRenderer {
+    -_size: int
+    +draw(canvas, engine, show_grid): void
+  }
+  class SnakeGameApp {
+    -engine: GameEngine
+    -_scores: ScoreManager
+    -_renderer: GameRenderer
+    -_handle_key(event): void
+    -_game_loop(): void
+    -_new_game(): void
+  }
+}
+
+GameEngine *-- Snake
+GameEngine *-- GameSettings
+GameEngine o-- "0..*" Entity
+GameEngine *-- LevelGenerator
+GameEngine ..> CollisionSystem
+SnakeGameApp *-- GameEngine
+SnakeGameApp *-- GameRenderer
+SnakeGameApp *-- ScoreManager
+GameRenderer ..> Entity
+@enduml

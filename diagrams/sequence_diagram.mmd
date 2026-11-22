@@ -1,0 +1,33 @@
+sequenceDiagram
+    actor Player as Игрок
+    participant UI as SnakeGameApp
+    participant Engine as GameEngine
+    participant Snake
+    participant Collision as CollisionSystem
+    participant Entity
+    participant View as GameRenderer
+    participant Score as ScoreManager
+    Player->>UI: Старт
+    UI->>Engine: start()
+    loop Каждый игровой тик
+        Player->>UI: WASD / стрелки
+        UI->>Engine: set_direction(direction)
+        Engine->>Snake: turn(direction)
+        UI->>Engine: step()
+        Engine->>Snake: next_head
+        Snake-->>Engine: Position
+        Engine->>Collision: normalize(), obstacle_hit(), body_hit()
+        Collision-->>Engine: результат
+        alt Столкновение
+            Engine->>Engine: _end_game()
+            UI->>Score: save()
+        else Ход допустим
+            Engine->>Snake: move(position, grow)
+            opt Собран объект
+                Engine->>Entity: on_collect(engine)
+                Entity-->>Engine: очки / эффект
+            end
+        end
+        UI->>View: draw(canvas, engine)
+        View-->>UI: обновлённое поле
+    end

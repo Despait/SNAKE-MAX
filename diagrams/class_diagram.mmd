@@ -1,0 +1,64 @@
+classDiagram
+    direction LR
+    class Entity {
+      <<abstract>>
+      +Position position
+      +color str
+      +glyph str
+      +on_collect(engine) str
+    }
+    class PowerUp {
+      <<abstract>>
+      +int expires_at
+      +activate(engine)
+    }
+    class Snake {
+      -list _segments
+      -Direction _direction
+      +turn(direction) bool
+      +move(position, grow)
+      +segments tuple
+    }
+    class GameSettings {
+      +int width
+      +int height
+      +GameMode mode
+      +Difficulty difficulty
+    }
+    class GameEngine {
+      +GameSettings settings
+      +Snake snake
+      +int score
+      +step()
+      +start()
+      +toggle_pause()
+      +apply_effect(name, duration)
+    }
+    class Food
+    class GoldenFood
+    class Obstacle
+    class Portal
+    class DoublePoints
+    class GhostMode
+    class SlowMotion
+    class CollisionSystem
+    class LevelGenerator
+    class GameRenderer
+    class ScoreManager
+    class SnakeGameApp
+    Entity <|-- Food
+    Food <|-- GoldenFood
+    Entity <|-- PowerUp
+    Entity <|-- Obstacle
+    Entity <|-- Portal
+    PowerUp <|-- DoublePoints
+    PowerUp <|-- GhostMode
+    PowerUp <|-- SlowMotion
+    GameEngine *-- Snake
+    GameEngine *-- GameSettings
+    GameEngine o-- Entity
+    GameEngine *-- LevelGenerator
+    GameEngine ..> CollisionSystem
+    SnakeGameApp *-- GameEngine
+    SnakeGameApp *-- GameRenderer
+    SnakeGameApp *-- ScoreManager
